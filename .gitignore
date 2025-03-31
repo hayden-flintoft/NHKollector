@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Generated files
+downloads/
+bin/
+metadata/*.json
+debug.html
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
