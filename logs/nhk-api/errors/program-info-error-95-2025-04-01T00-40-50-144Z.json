@@ -1,0 +1,8 @@
+{
+  "timestamp": "2025-04-01T00-40-50-144Z",
+  "url": "https://api.nhk.or.jp/v2/pg/info/130/g1/95.json",
+  "method": "get",
+  "error": {
+    "message": "Request failed with status code 400"
+  }
+}

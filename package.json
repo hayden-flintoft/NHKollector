@@ -4,7 +4,12 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:tvdb": "node test-tvdb.js",
+    "test:download": "node test-download.js",
+    "test:shows": "node test-shows.js",
+    "test:nhk": "node test-nhk-api.js",
+    "test:nhk-api": "node test/api/test-nhk-api.js"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +28,7 @@
     "axios": "^1.8.4",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0",
+    "deepl-node": "^1.17.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "fs-extra": "^11.3.0",

@@ -5,6 +5,7 @@ const fs = require('fs-extra')
 const chalk = require('chalk')
 const axios = require('axios')
 const cheerio = require('cheerio')
+const TVDBApi = require('./tvdb-api') // Fix the import path
 
 // Add this near the top, after the requires
 const debugLog = (msg) => console.log(chalk.gray(`🔍 [DEBUG] ${msg}`))
@@ -16,6 +17,7 @@ class VideoDownloader {
     this.tvdbApiKey = process.env.TVDB_API_KEY
     this.tvdbPin = process.env.TVDB_PIN
     this.tvdbUserKey = process.env.TVDB_USERKEY
+    this.tvdb = new TVDBApi()
   }
 
   async init() {
@@ -145,15 +147,11 @@ class VideoDownloader {
     console.log(chalk.blue('📥 Getting show information...'))
     const pageMetadata = await this.scrapeShowMetadata(url)
 
-    await fs.ensureDir(this.downloadDir)
+    // Look up episode in TVDB
+    const episodeInfo = await this.tvdb.findEpisodeFromScrapedData(pageMetadata)
 
-    // Generate filename using scraped metadata
-    const cleanText = (text = '') => text.replace(/[/\\?%*:|"<>]/g, '-')
-    const padNumber = (num) => String(num || '0').padStart(2, '0')
-
-    const filename = `${cleanText(pageMetadata.show)}.S${pageMetadata.season}E${
-      pageMetadata.episodeNumber
-    }.${cleanText(pageMetadata.episode)}.${pageMetadata.airDate}.%(ext)s`
+    // Generate filename using episode info
+    const filename = episodeInfo.filename
 
     // Download options
     const options = [
@@ -291,6 +289,75 @@ class VideoDownloader {
       return metadata
     } catch (error) {
       console.error(chalk.red('Failed to scrape metadata:'), error.message)
+      throw error
+    }
+  }
+
+  async getAvailableEpisodes(showUrl) {
+    try {
+      console.log(chalk.blue('🔍 Getting episodes list'))
+
+      // Extract show slug from URL
+      const showSlug = showUrl.split('/').filter(Boolean).pop()
+      debugLog(`Show slug: ${showSlug}`)
+
+      // Try NHK's API endpoint for episodes
+      const apiUrl = `https://www3.nhk.or.jp/nhkworld/data/en/shows/${showSlug}/episodes.json`
+      debugLog(`Trying API URL: ${apiUrl}`)
+
+      const response = await axios.get(apiUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept: 'application/json',
+          Referer: showUrl,
+        },
+      })
+
+      // Save raw API response for debugging
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      await fs.writeFile(
+        path.join(__dirname, `../../debug-api-${timestamp}.json`),
+        JSON.stringify(response.data, null, 2)
+      )
+
+      if (!response.data?.episodes?.length) {
+        debugLog('No episodes found in API response')
+        return []
+      }
+
+      const episodes = response.data.episodes.map((episode) => ({
+        title: episode.title,
+        url: `https://www3.nhk.or.jp/nhkworld/en/shows/${episode.pgm_id}/`,
+        imageUrl: episode.image_url,
+        duration: episode.duration,
+        available: true,
+        nhkId: episode.pgm_id,
+        date: episode.onair,
+        description: episode.description,
+      }))
+
+      console.log(chalk.green(`✅ Found ${episodes.length} episodes`))
+      return episodes
+    } catch (error) {
+      console.error(
+        chalk.red('Failed to get available episodes:'),
+        error.message
+      )
+      if (error.response) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        const errorFile = path.join(
+          __dirname,
+          `../../debug-error-${timestamp}.json`
+        )
+        await fs.writeFile(
+          errorFile,
+          JSON.stringify(error.response.data, null, 2)
+        )
+        debugLog(`Status: ${error.response.status}`)
+        debugLog(`Headers: ${JSON.stringify(error.response.headers, null, 2)}`)
+        debugLog(`Error response saved to: ${errorFile}`)
+      }
       throw error
     }
   }
