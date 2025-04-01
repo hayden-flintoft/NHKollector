@@ -4,6 +4,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 
+const debugLog = (msg) => console.log(chalk.gray(`🔍 [DEBUG] ${msg}`))
+
 class TVDBApi {
   constructor() {
     this.apiKey = process.env.TVDB_API_KEY
@@ -12,6 +14,7 @@ class TVDBApi {
     this.dataDir = path.join(__dirname, '../../downloads/data')
     this.tokenFile = path.join(this.dataDir, 'tvdb-token.json')
     this.showDataFile = path.join(this.dataDir, 'show-data.json')
+    this.seriesCache = new Map()
   }
 
   async init() {
@@ -82,47 +85,40 @@ class TVDBApi {
 
   async getSeriesById(id) {
     try {
-      const token = await this.getStoredToken()
-      if (!token) {
-        throw new Error('No valid token available')
+      // Check cache first
+      if (this.seriesCache.has(id)) {
+        debugLog('Using cached series info')
+        return this.seriesCache.get(id)
       }
 
-      console.log(chalk.blue(`🔍 Fetching series info for ID: ${id}`))
+      debugLog(`Fetching series info for ID: ${id}`)
+      const seriesId = id.toString().replace('series-', '')
 
       const response = await axios.get(
-        `${this.baseURL}/series/${id}/extended`,
+        `${this.baseURL}/series/${seriesId}/extended`,
         {
-          params: {
-            meta: 'episodes', // Include episodes in response
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: { meta: 'episodes' },
+          headers: await this.getHeaders(),
         }
       )
 
-      if (response.data?.data) {
-        // Save to show data file
-        const showData = await this.loadShowData()
-        showData[id] = {
-          ...response.data.data,
-          lastFetched: new Date().toISOString(),
-        }
-        await this.saveShowData(showData)
-
-        console.log(
-          chalk.green('✅ Successfully fetched and saved series info')
-        )
-        return response.data.data
-      } else {
-        throw new Error('Invalid response format from TVDB')
-      }
+      // Cache the result
+      this.seriesCache.set(id, response.data.data)
+      return response.data.data
     } catch (error) {
-      console.error(chalk.red('Failed to fetch series:'), error.message)
-      if (error.response?.status === 404) {
-        console.error(chalk.yellow('Series not found'))
-      }
+      console.error(chalk.red(`Failed to fetch series: ${error.message}`))
       throw error
+    }
+  }
+
+  async getHeaders() {
+    const token = await this.getStoredToken()
+    if (!token) {
+      throw new Error('No valid token available')
+    }
+    return {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
     }
   }
 

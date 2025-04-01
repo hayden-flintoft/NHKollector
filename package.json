@@ -9,7 +9,9 @@
     "test:download": "node test-download.js",
     "test:shows": "node test-shows.js",
     "test:nhk": "node test-nhk-api.js",
-    "test:nhk-api": "node test/api/test-nhk-api.js"
+    "test:nhk-api": "node test/api/test-nhk-api.js",
+    "test:filter": "node test/scrapers/test-episode-filter.js",
+    "test:enricher": "node test/scrapers/test-episode-enricher.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +35,7 @@
     "express": "^4.21.2",
     "fs-extra": "^11.3.0",
     "node-cron": "^3.0.3",
+    "puppeteer": "^24.5.0",
     "yt-dlp-wrap": "^2.3.12"
   }
 }
