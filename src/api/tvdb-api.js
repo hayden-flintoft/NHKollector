@@ -8,13 +8,17 @@ const debugLog = (msg) => console.log(chalk.gray(`🔍 [DEBUG] ${msg}`))
 
 class TVDBApi {
   constructor() {
-    this.apiKey = process.env.TVDB_API_KEY
-    this.pin = process.env.TVDB_PIN
     this.baseURL = 'https://api4.thetvdb.com/v4'
-    this.dataDir = path.join(__dirname, '../../downloads/data')
+    this.seriesCache = new Map()
+    this.dataDir = path.join(__dirname, '../../data/tvdb')
     this.tokenFile = path.join(this.dataDir, 'tvdb-token.json')
     this.showDataFile = path.join(this.dataDir, 'show-data.json')
-    this.seriesCache = new Map()
+
+    // Get API key from environment
+    this.apiKey = process.env.TVDB_API_KEY
+    if (!this.apiKey) {
+      throw new Error('TVDB_API_KEY not found in environment variables')
+    }
   }
 
   async init() {
@@ -52,32 +56,36 @@ class TVDBApi {
     try {
       console.log(chalk.blue('🔑 Logging in to TVDB API...'))
 
-      const response = await axios.post(`${this.baseURL}/login`, {
-        apikey: this.apiKey,
-        pin: this.pin,
-      })
+      const response = await axios.post(
+        `${this.baseURL}/login`,
+        {
+          apikey: this.apiKey,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        }
+      )
 
       if (response.data?.data?.token) {
-        // Store token with expiration date (1 month from now)
+        // Store token with expiration
         const tokenData = {
           token: response.data.data.token,
           expiresAt: new Date(
             Date.now() + 30 * 24 * 60 * 60 * 1000
           ).toISOString(),
         }
-
         await fs.writeJson(this.tokenFile, tokenData)
-        console.log(chalk.green('✅ Successfully logged in to TVDB'))
+        debugLog('Token saved successfully')
         return tokenData.token
-      } else {
-        throw new Error('No token received from TVDB')
       }
+      throw new Error('No token received from TVDB')
     } catch (error) {
       console.error(chalk.red('Failed to login to TVDB:'), error.message)
-      if (error.response) {
-        console.error(
-          chalk.gray('Response:', JSON.stringify(error.response.data, null, 2))
-        )
+      if (error.response?.data) {
+        console.error('Response:', JSON.stringify(error.response.data, null, 2))
       }
       throw error
     }
@@ -92,21 +100,32 @@ class TVDBApi {
       }
 
       debugLog(`Fetching series info for ID: ${id}`)
-      const seriesId = id.toString().replace('series-', '')
 
       const response = await axios.get(
-        `${this.baseURL}/series/${seriesId}/extended`,
+        `${this.baseURL}/series/${id}/extended`,
         {
-          params: { meta: 'episodes' },
+          params: {
+            meta: 'episodes',
+          },
           headers: await this.getHeaders(),
         }
       )
 
+      if (!response.data?.data) {
+        throw new Error('Invalid TVDB response format')
+      }
+
       // Cache the result
-      this.seriesCache.set(id, response.data.data)
-      return response.data.data
+      const seriesData = response.data.data
+      this.seriesCache.set(id, seriesData)
+
+      debugLog(`Found ${seriesData.episodes?.length || 0} episodes for series`)
+      return seriesData
     } catch (error) {
-      console.error(chalk.red(`Failed to fetch series: ${error.message}`))
+      console.error(
+        chalk.red(`Failed to fetch TVDB series ${id}:`),
+        error.message
+      )
       throw error
     }
   }
@@ -140,38 +159,29 @@ class TVDBApi {
 
   async findEpisodeFromScrapedData(scrapedMetadata) {
     try {
-      console.log(chalk.blue('🔍 Looking up episode information...'))
+      debugLog('Looking for episode match:')
+      debugLog(`  Title: ${scrapedMetadata.episode}`)
 
-      // First try to find show in local data
-      const showData = await this.loadShowData()
-      const showId = this.findShowByName(showData, scrapedMetadata.show)
+      const seriesId = 254957 // Fixed ID for Journeys in Japan
+      const series = await this.getSeriesById(seriesId)
 
-      if (!showId) {
-        // Search TVDB API for show
-        const searchResults = await this.searchSeries(scrapedMetadata.show)
-        if (searchResults.length === 0) {
-          throw new Error('Show not found on TVDB')
+      if (!series?.episodes?.length) {
+        throw new Error('No episodes found in TVDB data')
+      }
+
+      // Find matching episode
+      const episode = series.episodes.find((ep) =>
+        ep.name?.toLowerCase().includes(scrapedMetadata.episode.toLowerCase())
+      )
+
+      if (episode) {
+        return {
+          episode,
+          filename: this.generateFilename(series, episode),
         }
-        // Get full series data including episodes
-        await this.getSeriesById(searchResults[0].id)
-        return this.findEpisodeFromScrapedData(scrapedMetadata) // Retry with updated data
       }
 
-      // Find matching episode in show data
-      const show = showData[showId]
-      const episode = this.findMatchingEpisode(show.episodes, scrapedMetadata)
-
-      if (!episode) {
-        // Episode not found - may need to update series data
-        await this.getSeriesById(showId)
-        return this.findEpisodeFromScrapedData(scrapedMetadata) // Retry with updated data
-      }
-
-      return {
-        show: show,
-        episode: episode,
-        filename: this.generateFilename(show, episode),
-      }
+      return null
     } catch (error) {
       console.error(chalk.red('Failed to find episode:'), error.message)
       throw error

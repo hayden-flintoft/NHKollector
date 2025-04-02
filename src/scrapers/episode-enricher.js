@@ -1,4 +1,4 @@
-const TVDBApi = require('../server/tvdb-api')
+const TVDBApi = require('../api/tvdb-api')
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
@@ -20,14 +20,14 @@ async function enrichEpisodes(episodes, tvdbId) {
     await tvdb.init()
     const seriesInfo = await tvdb.getSeriesById(tvdbId)
 
-    if (!seriesInfo?.episodes?.length) {
-      throw new Error('No episodes found in TVDB data')
-    }
-
-    // Save logs
+    // Setup logging directory
     const logsDir = path.join(__dirname, '../../logs/episode-enricher')
     await fs.ensureDir(logsDir)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+
+    if (!seriesInfo?.episodes?.length) {
+      throw new Error('No episodes found in TVDB data')
+    }
 
     // Process episodes
     const results = []
@@ -44,7 +44,7 @@ async function enrichEpisodes(episodes, tvdbId) {
       const match = await tvdb.findEpisodeFromScrapedData({
         show: episode.show,
         episode: episode.title,
-        airDate: null, // Could add air date if available in NHK data
+        airDate: null,
       })
 
       if (match) {
