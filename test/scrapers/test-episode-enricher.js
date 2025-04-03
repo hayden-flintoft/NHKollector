@@ -1,6 +1,6 @@
 require('dotenv').config()
-const scrapeEpisodes = require('../../src/scrapers/episode-scraper')
-const enrichEpisodes = require('../../src/scrapers/episode-enricher')
+const scrapeEpisodes = require('../../src/services/scraper/nhk-episode-scraper')
+const enrichEpisodes = require('../../src/services/enricher/tvdb-enricher')
 const chalk = require('chalk')
 
 async function testEpisodeEnricher() {
