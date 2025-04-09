@@ -2,21 +2,21 @@
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
-const TVDBApi = require('./tvdb-api')
+const TVDBApi = require('../../api/tvdb-api') // Fix import path
 
 class ShowManager {
   constructor() {
-    this.configDir = path.join(__dirname, '../config')
+    this.configDir = path.join(__dirname, '../../../config') // Fix path
     this.showsFile = path.join(this.configDir, 'shows.json')
     this.tvdb = new TVDBApi()
-    this.shows = []
+    this.shows = new Map() // Change array to Map for easier lookups
   }
 
   async init() {
     try {
       await fs.ensureDir(this.configDir)
       await this.loadShows()
-      console.log(chalk.blue(`📺 Loaded ${this.shows.length} shows`))
+      console.log(chalk.blue(`📺 Loaded ${this.shows.size} shows`))
     } catch (error) {
       console.error(
         chalk.red('Failed to initialize show manager:'),
@@ -29,30 +29,27 @@ class ShowManager {
   async loadShows() {
     try {
       if (await fs.pathExists(this.showsFile)) {
-        this.shows = await fs.readJson(this.showsFile)
+        const showsArray = await fs.readJson(this.showsFile)
+        // Convert array to Map using nhkId as key
+        this.shows = new Map(showsArray.map((show) => [show.nhkId, show]))
       } else {
-        this.shows = []
+        this.shows = new Map()
         await this.saveShows()
       }
     } catch (error) {
       console.error(chalk.red('Error loading shows:'), error.message)
-      this.shows = []
+      this.shows = new Map()
     }
   }
 
   async saveShows() {
-    await fs.writeJson(this.showsFile, this.shows, { spaces: 2 })
+    // Convert Map back to array for storage
+    const showsArray = Array.from(this.shows.values())
+    await fs.writeJson(this.showsFile, showsArray, { spaces: 2 })
   }
 
   async addShow(showConfig) {
-    // Check for duplicates
-    const isDuplicate = this.shows.some(
-      (show) =>
-        show.tvdbId === showConfig.tvdbId ||
-        (showConfig.nhkId && show.nhkId === showConfig.nhkId)
-    )
-
-    if (isDuplicate) {
+    if (this.shows.has(showConfig.nhkId)) {
       console.log(chalk.yellow(`⚠️ Show already exists: ${showConfig.name}`))
       return false
     }
@@ -64,7 +61,7 @@ class ShowManager {
       showConfig.enabled = showConfig.enabled ?? true
       showConfig.lastChecked = null
 
-      this.shows.push(showConfig)
+      this.shows.set(showConfig.nhkId, showConfig)
       await this.saveShows()
 
       console.log(chalk.green(`✅ Added show: ${showConfig.name}`))
@@ -75,24 +72,27 @@ class ShowManager {
     }
   }
 
-  async removeShow(tvdbId) {
-    const index = this.shows.findIndex((show) => show.tvdbId === tvdbId)
-    if (index !== -1) {
-      this.shows.splice(index, 1)
+  async removeShow(nhkId) {
+    const removed = this.shows.delete(nhkId)
+    if (removed) {
       await this.saveShows()
-      return true
     }
-    return false
+    return removed
   }
 
-  getShows() {
-    return this.shows
+  getShow(nhkId) {
+    return this.shows.get(nhkId)
   }
 
-  async updateShow(tvdbId, updates) {
-    const show = this.shows.find((s) => s.tvdbId === tvdbId)
+  // Rename getShows to getAllShows for clarity
+  getAllShows() {
+    return Array.from(this.shows.values())
+  }
+
+  async updateShow(nhkId, updates) {
+    const show = this.shows.get(nhkId)
     if (show) {
-      Object.assign(show, updates)
+      this.shows.set(nhkId, { ...show, ...updates })
       await this.saveShows()
       return true
     }
@@ -102,7 +102,7 @@ class ShowManager {
   // Add method to clean duplicates from existing data
   async cleanDuplicates() {
     const unique = {}
-    const cleaned = this.shows.filter((show) => {
+    const cleaned = Array.from(this.shows.values()).filter((show) => {
       const key = `${show.tvdbId}_${show.nhkId}`
       if (unique[key]) {
         return false
@@ -111,13 +111,13 @@ class ShowManager {
       return true
     })
 
-    if (cleaned.length !== this.shows.length) {
+    if (cleaned.length !== this.shows.size) {
       console.log(
         chalk.yellow(
-          `⚠️ Removed ${this.shows.length - cleaned.length} duplicate shows`
+          `⚠️ Removed ${this.shows.size - cleaned.length} duplicate shows`
         )
       )
-      this.shows = cleaned
+      this.shows = new Map(cleaned.map((show) => [show.nhkId, show]))
       await this.saveShows()
     }
 

@@ -11,7 +11,8 @@
     "test:nhk": "node test-nhk-api.js",
     "test:nhk-api": "node test/api/test-nhk-api.js",
     "test:filter": "node test/scrapers/test-episode-filter.js",
-    "test:enricher": "node test/scrapers/test-episode-enricher.js"
+    "test:enricher": "node test/scrapers/test-episode-enricher.js",
+    "test:flow": "mocha test/integration/test-download-flow.js --timeout 300000"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,8 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.21",
+    "chai": "^4.4.1",
+    "mocha": "^10.3.0",
     "postcss": "^8.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -28,6 +31,7 @@
   "description": "",
   "dependencies": {
     "axios": "^1.8.4",
+    "better-queue": "^3.8.12",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0",
     "deepl-node": "^1.17.3",

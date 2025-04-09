@@ -3,92 +3,36 @@ const axios = require('axios')
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
+const BaseApiClient = require('./base-api')
 
 const debugLog = (msg) => console.log(chalk.gray(`🔍 [DEBUG] ${msg}`))
 
-class TVDBApi {
+class TVDBApi extends BaseApiClient {
   constructor() {
-    this.baseURL = 'https://api4.thetvdb.com/v4'
+    super({
+      baseURL: 'https://api4.thetvdb.com/v4',
+      dataDir: 'tvdb',
+      apiKeyEnv: 'TVDB_API_KEY',
+    })
     this.seriesCache = new Map()
-    this.dataDir = path.join(__dirname, '../../data/tvdb')
-    this.tokenFile = path.join(this.dataDir, 'tvdb-token.json')
-    this.showDataFile = path.join(this.dataDir, 'show-data.json')
-
-    // Get API key from environment
-    this.apiKey = process.env.TVDB_API_KEY
-    if (!this.apiKey) {
-      throw new Error('TVDB_API_KEY not found in environment variables')
-    }
   }
 
-  async init() {
-    try {
-      await fs.ensureDir(this.dataDir)
+  async authenticate() {
+    const response = await this.request('POST', '/login', {
+      data: { apikey: this.apiKey },
+    })
 
-      // Check if we have a valid token
-      const token = await this.getStoredToken()
-      if (!token) {
-        await this.login()
+    if (response?.data?.token) {
+      const tokenData = {
+        token: response.data.token,
+        expiresAt: new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        ).toISOString(),
       }
-    } catch (error) {
-      console.error(chalk.red('Failed to initialize TVDB API:', error.message))
-      throw error
+      await fs.writeJson(this.tokenFile, tokenData)
+      return tokenData.token
     }
-  }
-
-  async getStoredToken() {
-    try {
-      if (await fs.pathExists(this.tokenFile)) {
-        const tokenData = await fs.readJson(this.tokenFile)
-        // Check if token is still valid (less than 1 month old)
-        if (new Date(tokenData.expiresAt) > new Date()) {
-          return tokenData.token
-        }
-      }
-      return null
-    } catch (error) {
-      console.error(chalk.yellow('Error reading stored token:', error.message))
-      return null
-    }
-  }
-
-  async login() {
-    try {
-      console.log(chalk.blue('🔑 Logging in to TVDB API...'))
-
-      const response = await axios.post(
-        `${this.baseURL}/login`,
-        {
-          apikey: this.apiKey,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-        }
-      )
-
-      if (response.data?.data?.token) {
-        // Store token with expiration
-        const tokenData = {
-          token: response.data.data.token,
-          expiresAt: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-        }
-        await fs.writeJson(this.tokenFile, tokenData)
-        debugLog('Token saved successfully')
-        return tokenData.token
-      }
-      throw new Error('No token received from TVDB')
-    } catch (error) {
-      console.error(chalk.red('Failed to login to TVDB:'), error.message)
-      if (error.response?.data) {
-        console.error('Response:', JSON.stringify(error.response.data, null, 2))
-      }
-      throw error
-    }
+    throw new Error('No token received from TVDB')
   }
 
   async getSeriesById(id) {
