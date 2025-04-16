@@ -1,5 +1,5 @@
 require('dotenv').config()
-const scrapeEpisodes = require('../../src/scrapers/episode-scraper')
+const scrapeEpisodes = require('../../src/services/scraper/nhk-episode-scraper')
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')

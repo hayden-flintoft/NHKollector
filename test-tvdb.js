@@ -1,4 +1,11 @@
-const TVDBApi = require('./src/server/tvdb-api')
+// Direct API Access From End Users
+// Your project may not have the resources to provide its own API or caching proxy hosting, or you may not wish to deal with the complexities of either system.
+// In most cases you may write your app or software such that your users directly access TheTVDB's API.
+// You should contact us in advance to negotiate a contract (generally requiring attribution)
+// or use a subscriber-supported API key that requires that each of your users has a $12/year TheTVDB subscription.
+
+require('dotenv').config()
+const TVDBApi = require('./src/api/tvdb-api')
 const chalk = require('chalk')
 
 async function testTVDB() {

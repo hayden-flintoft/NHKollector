@@ -5,7 +5,7 @@ const fs = require('fs-extra')
 const chalk = require('chalk')
 const axios = require('axios')
 const cheerio = require('cheerio')
-const TVDBApi = require('./tvdb-api') // Fix the import path
+const TVDBApi = require('../api/tvdb-api') // Fix the import path
 
 // Add this near the top, after the requires
 const debugLog = (msg) => console.log(chalk.gray(`🔍 [DEBUG] ${msg}`))
