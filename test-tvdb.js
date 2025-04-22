@@ -5,50 +5,51 @@
 // or use a subscriber-supported API key that requires that each of your users has a $12/year TheTVDB subscription.
 
 require('dotenv').config()
-const TVDBApi = require('./src/api/tvdb-api')
+const TVDBScraper = require('./src/services/scraper/tvdb-scraper')
 const chalk = require('chalk')
+const Logger = require('./src/utils/logger')
 
 async function testTVDB() {
+  const scraper = new TVDBScraper()
+
   try {
-    console.log(chalk.blue('⏳ Testing TVDB API...'))
+    console.log(chalk.blue('⏳ Testing TVDB Scraper...'))
 
-    const tvdb = new TVDBApi()
-    await tvdb.init()
+    await Logger.init()
+    await scraper.init()
 
-    // Test series info fetch
-    const seriesId = 254957 // Journeys in Japan
-    console.log(chalk.blue(`📺 Fetching info for series ${seriesId}`))
-
-    const seriesInfo = await tvdb.getSeriesById(seriesId)
-
-    console.log(chalk.green('\n✅ Series Information:'))
-    console.log(chalk.gray('Name:'), seriesInfo.name)
-    console.log(chalk.gray('First Aired:'), seriesInfo.firstAired)
-    console.log(chalk.gray('Status:'), seriesInfo.status?.name)
-    console.log(chalk.gray('Episodes:'), seriesInfo.episodes?.length || 0)
-
-    // Display latest episode info if available
-    if (seriesInfo.episodes?.length > 0) {
-      const latest = seriesInfo.episodes[seriesInfo.episodes.length - 1]
-      console.log(chalk.blue('\n📺 Latest Episode:'))
-      console.log(chalk.gray('Name:'), latest.name)
-      console.log(chalk.gray('Aired:'), latest.aired)
-      console.log(chalk.gray('Season:'), latest.seasonNumber)
-      console.log(chalk.gray('Episode:'), latest.number)
+    // Test episode search
+    const testEpisode = {
+      showId: '254957',
+      title: 'NIIGATA: SNOW COUNTRY WONDERLAND',
+      nhkId: '2007552',
     }
 
-    // Save debugging info
-    console.log(chalk.blue('\n🔍 Debug Info:'))
-    console.log(chalk.gray('Data Location:'), tvdb.showDataFile)
+    console.log(chalk.blue(`🔍 Searching for episode: ${testEpisode.title}`))
+    const episode = await scraper.findEpisode(testEpisode)
+
+    if (episode) {
+      console.log(chalk.green('\n✅ Episode Found:'))
+      console.log(chalk.gray('Title:'), episode.title)
+      console.log(chalk.gray('Season:'), episode.season)
+      console.log(chalk.gray('Episode:'), episode.episode)
+      console.log(chalk.gray('Air Date:'), episode.airDate)
+      console.log(chalk.gray('ID:'), episode.id)
+    } else {
+      console.log(chalk.yellow('\n⚠️ No episode found'))
+    }
+
+    // Show cache info
+    console.log(chalk.blue('\n📂 Cache Info:'))
+    console.log(chalk.gray('Location:'), scraper.cacheDir)
   } catch (error) {
     console.error(chalk.red('❌ Test failed:'), error.message)
-    if (error.response?.data) {
-      console.error(
-        chalk.gray('Error details:'),
-        JSON.stringify(error.response.data, null, 2)
-      )
-    }
+    console.error(chalk.gray(error.stack))
+    process.exit(1)
   }
 }
 
-testTVDB()
+testTVDB().catch((error) => {
+  console.error(chalk.red('❌ Unhandled error:'), error)
+  process.exit(1)
+})
