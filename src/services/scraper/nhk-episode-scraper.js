@@ -3,16 +3,45 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 const axios = require('axios')
+const showConfig = require('../../config/shows.json')
 
 const debugLog = (msg) => console.log(chalk.gray(`🔍 [DEBUG] ${msg}`))
 
 /**
+ * Extract show URL from Sonarr show data
+ * @param {Object} show - Show data from Sonarr
+ * @returns {string|null} NHK show URL
+ */
+function extractShowUrl(show) {
+  // Get show slug from title
+  const showSlug = show.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+
+  // Look up URL from config
+  const showData = showConfig.shows[showSlug]
+  if (showData?.url) {
+    debugLog(`Found URL for ${showSlug}: ${showData.url}`)
+    return showData.url
+  }
+
+  // Fallback: Construct URL from slug
+  return `https://www3.nhk.or.jp/nhkworld/en/shows/${showSlug}/`
+}
+
+/**
  * Scrapes episodes from NHK World website
- * @param {string} showUrl - URL of the show page
+ * @param {Object} show - Show data from Sonarr
  * @returns {Promise<Array>} Array of episode objects
  */
-async function scrapeEpisodes(showUrl) {
+async function scrapeEpisodes(show) {
   let browser = null
+  const showUrl = extractShowUrl(show)
+
+  if (!showUrl) {
+    throw new Error(`Could not determine NHK URL for show: ${show.title}`)
+  }
 
   try {
     console.log(chalk.blue(`🔍 Scraping episodes from: ${showUrl}`))
