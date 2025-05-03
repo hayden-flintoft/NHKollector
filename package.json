@@ -13,7 +13,9 @@
     "test:filter": "node test/scrapers/test-episode-filter.js",
     "test:enricher": "node test/scrapers/test-episode-enricher.js",
     "test:flow": "mocha test/integration/test-download-flow.js --timeout 300000",
-    "start:indexer": "node src/bin/indexer.js"
+    "start:indexer": "node src/bin/indexer.js",
+    "start": "node src/bin/indexer.js",
+    "validate:shows": "node -e \"require('./config/shows.json'); console.log('shows.json is valid!')\""
   },
   "keywords": [],
   "author": "",

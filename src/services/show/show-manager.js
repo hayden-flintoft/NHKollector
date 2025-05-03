@@ -1,14 +1,13 @@
-// src/server/show-manager.js
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
-const TVDBApi = require('../../api/tvdb-api') // Fix import path
+// const TVDBApi = require('../../api/tvdb-api') // Fix import path
 
 class ShowManager {
   constructor() {
     this.configDir = path.join(__dirname, '../../../config') // Fix path
     this.showsFile = path.join(this.configDir, 'shows.json')
-    this.tvdb = new TVDBApi()
+    // this.tvdb = new TVDBApi()
     this.shows = new Map() // Change array to Map for easier lookups
   }
 

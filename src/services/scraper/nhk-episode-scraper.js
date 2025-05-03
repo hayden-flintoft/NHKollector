@@ -3,7 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 const axios = require('axios')
-const showConfig = require('../../config/shows.json')
+const showConfig = require('../../../config/shows.json')
 
 const debugLog = (msg) => console.log(chalk.gray(`🔍 [DEBUG] ${msg}`))
 
