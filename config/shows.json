@@ -1,13 +1,12 @@
-[
-  {
-    "nhkId": "2007550",
-    "name": "Journeys in Japan",
-    "url": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
-    "tvdbId": 254957,
-    "metadata": {
-      "network": "NHK World",
-      "language": "eng",
-      "country": "jpn"
+{
+  "shows": {
+    "journeys-in-japan": {
+      "title": "Journeys in Japan",
+      "url": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/"
+    },
+    "train-cruise": {
+      "title": "Train Cruise",
+      "url": "https://www3.nhk.or.jp/nhkworld/en/shows/traincruise/"
     }
   }
-]
+}
