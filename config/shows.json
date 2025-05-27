@@ -2,8 +2,8 @@
   {
     "nhkId": "2007550",
     "name": "Journeys in Japan",
-    "url": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
-    "tvdbId": 254957,
+    "nhkurl": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
+    "tvdburl": "https://thetvdb.com/series/journeys-in-japan",
     "metadata": {
       "network": "NHK World",
       "language": "eng",

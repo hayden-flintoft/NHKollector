@@ -9,6 +9,7 @@ class Episode {
     this.description = data.description || ''
     this.thumbnailUrl = data.thumbnailUrl || ''
     this.nhkId = this._extractNhkId(data.url)
+    this.seasonEpisode = data.seasonEpisode || ''
   }
 
   _extractNhkId(url) {
@@ -22,7 +23,6 @@ class Episode {
   }
 
   toFileName() {
-    // Convert show and title to title case
     const titleCase = (str) => {
       return str.split(' ').map(word => 
         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
@@ -32,7 +32,9 @@ class Episode {
     const safeShow = titleCase(this.show).replace(/[/\\?%*:|"<>]/g, '-')
     const safeTitle = titleCase(this.title).replace(/[/\\?%*:|"<>]/g, '-')
     
-    return `${safeShow} - ${safeTitle} [720p][200MB].mp4`
+    // Include season/episode if available
+    const episodeInfo = this.seasonEpisode ? `${this.seasonEpisode} ` : ''
+    return `${safeShow} - ${episodeInfo}${safeTitle} [720p][200MB].mp4`
   }
 }
 
