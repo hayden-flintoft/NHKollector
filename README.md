@@ -1,24 +1,27 @@
-# NHK Tool
+# NHK Show Downloader
 
-A tool for downloading and managing NHK World Japan shows.
+A simple tool to download shows from NHK World Japan. The tool includes all necessary dependencies, including the yt-dlp binary.
 
 ## Setup
 
-1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Create `.env` file with your TVDB credentials:
+## Usage
+
+```bash
+./nhk-download.js {path to show homepage} 
 ```
-TVDB_API_KEY=your_api_key_here
-TVDB_PIN=your_pin_here
-TVDB_USERKEY=your_userkey_here
+e.g. 
+```bash
+./nhk-download.js https://www3.nhk.or.jp/nhkworld/en/shows/journeys/
 ```
 
-3. Run the tool:
+Or configure shows in `config/shows.json` and run:
+
 ```bash
-node src/index.js
+./nhk-download.js
 ```
 
 ## Features
@@ -44,3 +47,10 @@ nhktool/
 ├── metadata/
 └── bin/
 ```
+
+## Future Features
+
+- Better implementation of yt-dlp
+- User interface
+- Server with scheduler
+- TVDB integration for show and episode data

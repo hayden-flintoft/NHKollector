@@ -16,3 +16,6 @@ debug.html
 
 # Logs
 *.log
+
+# Keep yt-dlp binary
+!bin/yt-dlp
