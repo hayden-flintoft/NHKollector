@@ -9,5 +9,16 @@
       "language": "eng",
       "country": "jpn"
     }
+  },
+  {
+    "nhkId": "2007551",
+    "name": "Seasoning the Seasons",
+    "nhkurl": "https://www3.nhk.or.jp/nhkworld/en/shows/seasoning/",
+    "tvdburl": "https://thetvdb.com/series/seasoning-the-seasons",
+    "metadata": {
+      "network": "NHK World",
+      "language": "eng",
+      "country": "jpn"
+    }
   }
 ]

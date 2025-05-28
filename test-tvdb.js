@@ -14,26 +14,26 @@ async function main() {
     console.log(chalk.gray('Episode:', episodeTitleCached))
     const cachedResult = await scraper.findEpisodeInfo(showUrl, episodeTitleCached)
     
-    // Test uncached episode with longer timeout
+    // Test uncached episode
     console.log(chalk.blue('\n🔍 Testing new episode:'))
     console.log(chalk.gray('Episode:', episodeTitleNew))
-    console.log(chalk.gray('Using 30 second timeout'))
-    
-    const pageOptions = {
-      timeout: 30000,
-      waitUntil: ['networkidle0', 'domcontentloaded']
-    }
-    
-    const newResult = await scraper.findEpisodeInfo(showUrl, episodeTitleNew, pageOptions)
+    const newResult = await scraper.findEpisodeInfo(showUrl, episodeTitleNew, {
+      timeout: 30000  // Allow more time for uncached lookup
+    })
 
-    // Display final results
+    // Display results
     console.log(chalk.blue('\n📝 Results:'))
+    
     if (cachedResult) {
-      console.log(chalk.green('✅ Cached episode:', cachedResult))
+      console.log(chalk.green(`✅ Cached episode found: ${episodeTitleCached}`))
+      console.log(chalk.gray(`   Season/Episode: ${cachedResult}`))
     }
+    
     if (newResult) {
-      console.log(chalk.green('✅ New episode:', newResult))
+      console.log(chalk.green(`✅ New episode found: ${episodeTitleNew}`))
+      console.log(chalk.gray(`   Season/Episode: ${newResult}`))
     }
+    
     if (!cachedResult && !newResult) {
       console.log(chalk.yellow('⚠️ No episodes found'))
     }
