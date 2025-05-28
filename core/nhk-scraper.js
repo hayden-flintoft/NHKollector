@@ -3,6 +3,60 @@ const chalk = require('chalk')
 const Episode = require('./models/episode')
 
 class NHKScraper {
+    async scrapeEpisodeDetails(episode) {
+        let browser = null
+
+        try {
+            console.log(chalk.blue(`🔍 Scraping episode details from: ${episode.url}`))
+
+            browser = await puppeteer.launch({
+                headless: 'new',
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu',
+                ],
+                executablePath: process.env.CHROME_BIN || null,
+            })
+
+            const page = await browser.newPage()
+            page.setDefaultNavigationTimeout(30000)
+
+            console.log(chalk.gray('⏳ Loading episode page...'))
+            await page.goto(episode.url, { waitUntil: 'networkidle0' })
+            console.log(chalk.gray('✅ Episode page loaded'))
+
+            // Get the full show name from the logo first
+            const showName = await page.evaluate(() => {
+                const logoImg = document.querySelector("#shows_program_hero > div > div.pProgramHero__logo.-logo > div > h1 > picture > img")
+                return logoImg ? logoImg.getAttribute('alt') : null
+            })
+
+            if (!showName) {
+                throw new Error('Could not find show name')
+            }
+
+            // Get available video qualities
+            const qualities = await page.evaluate(() => {
+                const qualityButtons = document.querySelectorAll('.quality-selector button')
+                return Array.from(qualityButtons).map(btn => btn.dataset.quality)
+            })
+
+            episode.availableQualities = qualities
+
+            return episode
+        } catch (error) {
+            console.error(chalk.red('Failed to scrape episode details:'), error.message)
+            return episode
+        } finally {
+            if (browser) {
+                console.log(chalk.gray('Closing browser'))
+                await browser.close()
+            }
+        }
+    }
+
     async scrapeShowEpisodes(url) {
         let browser = null
 

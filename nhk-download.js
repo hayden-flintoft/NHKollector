@@ -5,12 +5,13 @@ const chalk = require('chalk')
 const NHKScraper = require('./core/nhk-scraper')
 const TVDBScraper = require('./core/tvdb-scraper')
 const DownloadHistory = require('./core/download-history')
+const Downloader = require('./core/downloader')  // Add this import
 const Show = require('./core/models/show')
 const Episode = require('./core/models/episode')
 
 const SHOWS_CONFIG = path.join(__dirname, 'config', 'shows.json')
 
-async function processShow(show, tvdbScraper, history) {
+async function processShow(show, tvdbScraper, history, downloader) {  // Add downloader parameter
   console.log(chalk.blue(`\n📺 Processing show: ${show.name}`))
 
   // Get episodes from NHK
@@ -27,6 +28,7 @@ async function processShow(show, tvdbScraper, history) {
     )
     if (seasonEpisode) {
       episode.seasonEpisode = seasonEpisode
+      episode.show = show  // Add show object to episode
     }
   }
 
@@ -44,8 +46,12 @@ async function processShow(show, tvdbScraper, history) {
 
 async function main() {
   const tvdbScraper = new TVDBScraper()
+  const downloader = new Downloader()  // Create downloader instance
   
   try {
+    // Initialize downloader
+    await downloader.init()
+
     // Load show configurations
     const showConfigs = await fs.readJson(SHOWS_CONFIG)
     const shows = showConfigs.map(config => new Show(config))
@@ -59,14 +65,12 @@ async function main() {
 
     // Process each show
     for (const show of shows) {
-      const { newEpisodes, totalEpisodes } = await processShow(show, tvdbScraper, history)
+      const { newEpisodes, totalEpisodes } = await processShow(show, tvdbScraper, history, downloader)
       console.log(chalk.green(`\n✅ ${show.name}: Found ${totalEpisodes} episodes (${newEpisodes.length} new)`))
       
       if (newEpisodes.length > 0) {
         // Download new episodes
         console.log(chalk.blue('\n⏳ Starting downloads...\n'))
-        const downloader = new Downloader()
-        await downloader.init()
 
         for (const episode of newEpisodes) {
           try {
@@ -74,7 +78,11 @@ async function main() {
             await history.markDownloaded(episode)
             console.log(chalk.green(`✅ Downloaded: ${episode.toFileName()}`))
           } catch (error) {
-            console.error(chalk.red(`❌ Failed to download ${episode.title}:`, error.message))
+            if (error.message.includes('No matching quality')) {
+              console.warn(chalk.yellow(`⚠️ Skipping ${episode.title}: ${error.message}`))
+            } else {
+              console.error(chalk.red(`❌ Failed to download ${episode.title}: ${error.message}`))
+            }
           }
         }
       }
@@ -85,6 +93,9 @@ async function main() {
     process.exit(1)
   } finally {
     await tvdbScraper.cleanup()
+    if (downloader.cleanup) {
+      await downloader.cleanup()
+    }
   }
 }
 

@@ -1,5 +1,50 @@
 {
   "episodes": {
+    "2007546": {
+      "show": {
+        "nhkId": "2007550",
+        "name": "Journeys in Japan",
+        "nhkUrl": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
+        "tvdbUrl": "https://thetvdb.com/series/journeys-in-japan",
+        "metadata": {},
+        "videoSettings": {
+          "format": "mp4",
+          "downloadPath": "downloads/journeys-in-japan"
+        }
+      },
+      "title": "Enku's 120,000 Smiles over Gifu",
+      "downloadedAt": "2025-05-28T01:37:18.655Z"
+    },
+    "2007547": {
+      "show": {
+        "nhkId": "2007550",
+        "name": "Journeys in Japan",
+        "nhkUrl": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
+        "tvdbUrl": "https://thetvdb.com/series/journeys-in-japan",
+        "metadata": {},
+        "videoSettings": {
+          "format": "mp4",
+          "downloadPath": "downloads/journeys-in-japan"
+        }
+      },
+      "title": "Hokuriku 1: Foods and Flavors of the Trading Ships",
+      "downloadedAt": "2025-05-28T01:35:22.424Z"
+    },
+    "2007548": {
+      "show": {
+        "nhkId": "2007550",
+        "name": "Journeys in Japan",
+        "nhkUrl": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
+        "tvdbUrl": "https://thetvdb.com/series/journeys-in-japan",
+        "metadata": {},
+        "videoSettings": {
+          "format": "mp4",
+          "downloadPath": "downloads/journeys-in-japan"
+        }
+      },
+      "title": "Hokuriku 2: The Golden Age of the Trading Ships and Their Legacy",
+      "downloadedAt": "2025-05-28T01:33:32.274Z"
+    },
     "2007549": {
       "show": "Journeys in Japan",
       "title": "Gunma: Raking in Good Luck",

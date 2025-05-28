@@ -4,15 +4,19 @@ class Show {
   constructor(data) {
     this.name = data.name
     this.nhkId = data.nhkId
-    this.nhkUrl = data.nhkurl
-    this.tvdbUrl = data.tvdburl
+    this.nhkUrl = data.nhkUrl || data.nhkurl  // Handle both cases
+    this.tvdbUrl = data.tvdbUrl || data.tvdburl  // Handle both cases
     this.metadata = data.metadata || {}
+    this.videoSettings = {
+      format: "mp4",
+      downloadPath: `downloads/${this.name.toLowerCase().replace(/\s+/g, '-')}`
+    }
   }
 
   validate() {
     if (!this.name) throw new Error('Show requires name')
-    if (!this.nhkUrl) throw new Error('Show requires nhkurl')
-    if (!this.tvdbUrl) throw new Error('Show requires tvdburl')
+    if (!this.nhkUrl) throw new Error('Show requires nhkUrl')
+    if (!this.tvdbUrl) throw new Error('Show requires tvdbUrl')
   }
 
   getTvdbSlug() {
@@ -24,9 +28,10 @@ class Show {
     return {
       nhkId: this.nhkId,
       name: this.name,
-      nhkurl: this.nhkUrl,
-      tvdburl: this.tvdbUrl,
-      metadata: this.metadata
+      nhkUrl: this.nhkUrl,
+      tvdbUrl: this.tvdbUrl,
+      metadata: this.metadata,
+      videoSettings: this.videoSettings
     }
   }
 }
