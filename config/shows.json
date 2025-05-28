@@ -2,12 +2,21 @@
   {
     "nhkId": "2007550",
     "name": "Journeys in Japan",
-    "url": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
-    "tvdbId": 254957,
-    "metadata": {
-      "network": "NHK World",
-      "language": "eng",
-      "country": "jpn"
+    "nhkUrl": "https://www3.nhk.or.jp/nhkworld/en/shows/journeys/",
+    "tvdbUrl": "https://thetvdb.com/series/journeys-in-japan",
+    "videoSettings": {
+      "format": "mp4",
+      "downloadPath": "downloads/journeys-in-japan"
+    }
+  },
+  {
+    "nhkId": "2007551",
+    "name": "Seasoning the Seasons",
+    "nhkUrl": "https://www3.nhk.or.jp/nhkworld/en/shows/seasoning/",
+    "tvdbUrl": "https://thetvdb.com/series/seasoning-the-seasons",
+    "videoSettings": {
+      "format": "mp4",
+      "downloadPath": "downloads/seasoning-the-seasons"
     }
   }
 ]

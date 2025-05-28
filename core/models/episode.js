@@ -9,6 +9,11 @@ class Episode {
     this.description = data.description || ''
     this.thumbnailUrl = data.thumbnailUrl || ''
     this.nhkId = this._extractNhkId(data.url)
+    this.seasonEpisode = data.seasonEpisode || ''
+    this.availableQualities = data.availableQualities || []
+    this.selectedQuality = null
+    this.show = data.show
+    this.downloadQuality = 'best' // Default to letting yt-dlp choose
   }
 
   _extractNhkId(url) {
@@ -22,17 +27,13 @@ class Episode {
   }
 
   toFileName() {
-    // Convert show and title to title case
-    const titleCase = (str) => {
-      return str.split(' ').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' ')
-    }
-
-    const safeShow = titleCase(this.show).replace(/[/\\?%*:|"<>]/g, '-')
-    const safeTitle = titleCase(this.title).replace(/[/\\?%*:|"<>]/g, '-')
+    const sanitize = str => str.replace(/[/\\?%*:|"<>]/g, '-')
+    const showName = sanitize(this.show.name)
+    const epTitle = sanitize(this.title)
+    // Quality will be updated after download starts
+    const quality = this.downloadQuality || ''
     
-    return `${safeShow} - ${safeTitle} [720p][200MB].mp4`
+    return `${showName} - ${this.seasonEpisode} - ${epTitle} - [${quality}].${this.show.videoSettings?.format || 'mp4'}`
   }
 }
 
