@@ -1,6 +1,6 @@
-# NHK Show Downloader
+# NHKollector
 
-A tool to download and organize shows from NHK World Japan with automated TVDB metadata integration.
+A tool to download and organise shows from NHK World Japan with automated TVDB metadata integration.
 
 ## Purpose
 
@@ -9,11 +9,11 @@ This tool aims to solve two key issues with NHK World programming:
 1. Limited smart TV app availability after recent decommissioning
 2. Show preservation given NHK's history of removing content (e.g. J-Trip Plan)
 
-The tool automatically downloads shows, integrates metadata, and organizes files in a format suitable for media servers and smart TVs.
+The tool automatically downloads shows, integrates metadata, and organises files in a format suitable for media servers and smart TVs.
 
 ## Background
 
-NHK World Japan has reduced their smart TV app availability in recent years, making it difficult to watch their content on larger screens. Additionally, shows have been known to disappear from their catalog without warning, as happened with J-Trip Plan and other popular programs.
+NHK World Japan has reduced the availability of its smart TV app in recent years, making it more difficult to watch its content on larger screens. Additionally, shows have been known to disappear from their catalogue without warning, as happened with J-Trip Plan and other popular programs.
 
 This project serves as both a practical solution for archiving content and a portfolio demonstration of web scraping, automation, and media management.
 
@@ -52,10 +52,10 @@ Or configure shows in `config/shows.json` and run:
 ## Features
 
 - Scrapes show metadata from NHK World Japan
-- Downloads episodes in best available quality
+- Downloads episodes in the best available quality
 - Embeds English subtitles when available
 - Integrates TVDB season/episode data
-- Organizes files by show name and metadata
+- Organises files by show name and metadata
 - Caches episode information for faster lookups
 - Tracks download history
 
