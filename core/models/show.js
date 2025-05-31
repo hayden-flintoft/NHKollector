@@ -3,7 +3,6 @@ const path = require('path')
 class Show {
   constructor(data) {
     this.name = data.name
-    this.nhkId = data.nhkId
     this.nhkUrl = data.nhkUrl || data.nhkurl  // Handle both cases
     this.tvdbUrl = data.tvdbUrl || data.tvdburl  // Handle both cases
     this.metadata = data.metadata || {}
@@ -26,7 +25,6 @@ class Show {
 
   toJSON() {
     return {
-      nhkId: this.nhkId,
       name: this.name,
       nhkUrl: this.nhkUrl,
       tvdbUrl: this.tvdbUrl,
