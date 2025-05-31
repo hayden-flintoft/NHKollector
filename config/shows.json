@@ -7,5 +7,14 @@
       "format": "mp4",
       "downloadPath": "downloads/journeys-in-japan"
     }
+  },
+  {
+    "name": "Seasoning the Seasons",
+    "nhkUrl": "https://www3.nhk.or.jp/nhkworld/en/shows/seasoning/",
+    "tvdbUrl": "https://thetvdb.com/series/seasoning-the-seasons/allseasons/official",
+    "videoSettings": {
+      "format": "mp4",
+      "downloadPath": "test"
+    }
   }
 ]
