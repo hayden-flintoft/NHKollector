@@ -5,7 +5,16 @@
     "tvdbUrl": "https://thetvdb.com/series/journeys-in-japan/allseasons/official",
     "videoSettings": {
       "format": "mp4",
-      "downloadPath": "downloads/journeys-in-japan"
+      "downloadPath": "/mnt/e/Journeys in Japan"
+    }
+  },
+  {
+    "name": "Train Cruise",
+    "nhkUrl": "https://www3.nhk.or.jp/nhkworld/en/shows/traincruise/",
+    "tvdbUrl": "https://thetvdb.com/series/train-cruise/allseasons/official",
+    "videoSettings": {
+      "format": "mp4",
+      "downloadPath": "/mnt/e/Train Cruise"
     }
   },
   {
@@ -14,7 +23,7 @@
     "tvdbUrl": "https://thetvdb.com/series/seasoning-the-seasons/allseasons/official",
     "videoSettings": {
       "format": "mp4",
-      "downloadPath": "test"
+      "downloadPath": "/mnt/e/Seasoning the Seasons"
     }
   }
 ]

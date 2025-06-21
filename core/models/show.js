@@ -6,9 +6,11 @@ class Show {
     this.nhkUrl = data.nhkUrl || data.nhkurl  // Handle both cases
     this.tvdbUrl = data.tvdbUrl || data.tvdburl  // Handle both cases
     this.metadata = data.metadata || {}
+    // Use config value if present, else default
     this.videoSettings = {
-      format: "mp4",
-      downloadPath: `downloads/${this.name.toLowerCase().replace(/\s+/g, '-')}`
+      format: (data.videoSettings && data.videoSettings.format) || "mp4",
+      downloadPath: (data.videoSettings && data.videoSettings.downloadPath) ||
+        `downloads/${this.name.toLowerCase().replace(/\s+/g, '-')}`
     }
   }
 
