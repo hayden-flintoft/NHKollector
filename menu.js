@@ -8,6 +8,7 @@ const fs = require('fs-extra')
 const listShows = require('./list-shows.js')
 const addShow = require('./add-show.js')
 const deleteShow = require('./delete-show.js')
+const searchEpisodes = require('./search-episodes')
 const SHOWS_CONFIG = path.join(__dirname, 'config', 'shows.json')
 
 // Utility prompt
@@ -96,6 +97,17 @@ async function deleteEpisodeMenu(showIdx) {
   await prompt(chalk.gray('\nPress Enter to continue...'))
 }
 
+// --- EPISODE SEARCH ---
+async function searchEpisodesMenu() {
+  try {
+    // Execute the main function from search-episodes script
+    await require('./search-episodes').main()
+  } catch (error) {
+    console.error(chalk.red('Error searching episodes:'), error.message)
+  }
+  await prompt(chalk.gray('\nPress Enter to continue...'))
+}
+
 // --- SEASON CRUD ---
 async function listSeasonsMenu(showIdx) {
   // Placeholder: Implement list seasons logic
@@ -179,6 +191,7 @@ async function manageShowDetailMenu(showIdx) {
     console.log(chalk.yellow('[6]') + ' - Add season')
     console.log(chalk.yellow('[7]') + ' - Edit season')
     console.log(chalk.yellow('[8]') + ' - Delete season')
+    console.log(chalk.yellow('[9]') + ' - Search & verify downloaded episodes') // Add this line
     console.log(chalk.yellow('[0]') + ' - Return to Shows Menu')
     console.log(chalk.yellow('[Q]') + ' - Quit\n')
     const choice = (await prompt('Select an option: ')).trim().toUpperCase()
@@ -190,6 +203,37 @@ async function manageShowDetailMenu(showIdx) {
     else if (choice === '6') await addSeasonMenu(showIdx)
     else if (choice === '7') await editSeasonMenu(showIdx)
     else if (choice === '8') await deleteSeasonMenu(showIdx)
+    else if (choice === '9') {  // Add this block
+      // Run search for just this show
+      try {
+        const { getShowEpisodesWithStatus } = require('./search-episodes')
+        const episodes = await getShowEpisodesWithStatus(show)
+        
+        // Use the display function from search-episodes
+        require('./search-episodes').displayEpisodeStatus(episodes)
+        
+        // Check for missing episodes
+        const missing = require('./search-episodes').findMissingEpisodes(episodes)
+        if (missing.length > 0) {
+          console.log(chalk.yellow(`\n⚠️ Found ${missing.length} episodes in history but missing from disk:`))
+          missing.forEach(ep => {
+            console.log(chalk.gray(`  - ${ep.title} (${ep.seasonEpisode})`))
+          })
+        }
+        
+        // Check for orphaned files
+        const orphaned = await require('./search-episodes').findOrphanedFiles(show)
+        if (orphaned.length > 0) {
+          console.log(chalk.yellow(`\n⚠️ Found ${orphaned.length} files on disk not matching any known episode:`))
+          orphaned.forEach(file => {
+            console.log(chalk.gray(`  - ${path.basename(file)}`))
+          })
+        }
+      } catch (error) {
+        console.error(chalk.red('Error searching episodes:'), error.message)
+      }
+      await prompt(chalk.gray('\nPress Enter to continue...'))
+    }
     else if (choice === '0') return
     else if (choice === 'Q') {
       console.log(chalk.green('\nGoodbye!'))
@@ -205,6 +249,7 @@ async function mainMenu() {
     console.log(chalk.blue('Main Menu'))
     console.log(chalk.yellow('[1]') + ' - Run downloader')
     console.log(chalk.yellow('[2]') + ' - Manage Shows')
+    console.log(chalk.yellow('[3]') + ' - Search & Verify Downloaded Episodes') // Add this line
     console.log(chalk.yellow('[Q]') + ' - Quit\n')
     const choice = (await prompt('Select an option: ')).trim().toUpperCase()
     if (choice === '1') {
@@ -212,6 +257,8 @@ async function mainMenu() {
       await prompt(chalk.gray('\nPress Enter to continue...'))
     } else if (choice === '2') {
       await manageShowsMenu()
+    } else if (choice === '3') {  // Add this block
+      await searchEpisodesMenu()
     } else if (choice === 'Q') {
       console.log(chalk.green('\nGoodbye!'))
       process.exit(0)

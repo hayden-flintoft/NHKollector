@@ -55,6 +55,16 @@ class TVDBScraper {
       return null
     }
 
+    // 1. Check cache first
+    const cached = this.getCachedEpisode(showSlug, episodeTitle)
+    if (cached) {
+      console.log(chalk.green(`✅ [CACHE] Found episode: ${episodeTitle}`))
+      console.log(chalk.gray(`   Season/Episode: ${cached}`))
+      return cached
+    } else {
+      console.log(chalk.yellow(`🔍 [TVDB] Fetching episode: ${episodeTitle}`))
+    }
+
     let page = null
     try {
       this.browser = await puppeteer.launch({

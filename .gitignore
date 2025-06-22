@@ -19,3 +19,6 @@ debug.html
 
 # Keep yt-dlp binary
 !bin/yt-dlp
+
+# Ignore personal show configuration
+config/shows.json

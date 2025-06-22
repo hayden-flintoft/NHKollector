@@ -7,20 +7,51 @@ const puppeteer = require('puppeteer')
 
 const SHOWS_CONFIG = path.join(__dirname, 'config', 'shows.json')
 
+// Detect absolute Windows path (e.g. E:\ or E:/)
+function isAbsoluteWinPath(p) {
+  return /^[a-zA-Z]:[\\/]/.test(p)
+}
+// Detect UNC path (e.g. \\wsl.localhost\...)
+function isUncPath(p) {
+  return /^\\\\/.test(p)
+}
+
+// Sanitize download path for Windows, UNC, or Linux
+function sanitizeDownloadPath(input, showSlug) {
+  let p = input.trim()
+  if (!p) return `downloads/${showSlug}`
+
+  // Remove wrapping quotes if present
+  if ((p.startsWith('"') && p.endsWith('"')) || (p.startsWith("'") && p.endsWith("'"))) {
+    p = p.slice(1, -1)
+  }
+
+  if (isAbsoluteWinPath(p) || isUncPath(p)) {
+    // For Windows/UNC, sanitize segments after root, preserve slashes and colon
+    const parts = p.split(/[\\/]/)
+    const root = parts[0].endsWith(':') ? parts[0] + '\\' : parts[0] // e.g. E:\
+    const rest = parts.slice(1).map(seg =>
+      seg.replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, ' ').trim()
+    )
+    return [root, ...rest].join('\\')
+  } else {
+    // For Linux/relative, sanitize each segment
+    p = p.split('/').map(seg =>
+      seg.replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, ' ').trim()
+    ).join('/')
+    // Remove duplicate/trailing slashes
+    p = p.replace(/\/+/g, '/')
+    if (p.endsWith('/')) p = p.slice(0, -1)
+    return p
+  }
+}
+
 function sanitizeUrl(url, base, slugPattern) {
   url = url.trim()
   if (!url.startsWith(base)) throw new Error(`URL must start with ${base}`)
   const slug = url.replace(base, '').replace(/\/+$/, '').split('/')[0]
   if (!slug.match(slugPattern)) throw new Error('Invalid slug in URL')
   return `${base}${slug}/`
-}
-
-function sanitizeDownloadPath(input, showSlug) {
-  let p = input.trim()
-  if (!p) return `downloads/${showSlug}`
-  // Remove dangerous chars, normalize slashes
-  p = p.replace(/["'<>|?*]/g, '').replace(/\\/g, '/')
-  return p
 }
 
 async function prompt(question) {
@@ -124,4 +155,4 @@ async function main() {
 }
 
 if (require.main === module) main()
-    module.exports = main
+module.exports = main
