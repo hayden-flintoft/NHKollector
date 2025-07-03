@@ -1,0 +1,24 @@
+{
+  "service": {
+    "checkInterval": "0 */6 * * *",
+    "maxConcurrentDownloads": 2,
+    "logLevel": "info",
+    "autoStart": true,
+    "port": 8081,
+    "autoPortDetection": true,
+    "portRange": {
+      "min": 8081,
+      "max": 8090
+    }
+  },
+  "notifications": {
+    "enabled": false,
+    "webhook": null,
+    "email": null
+  },
+  "downloads": {
+    "retryAttempts": 3,
+    "retryDelay": 300000,
+    "qualityPreference": "best"
+  }
+}

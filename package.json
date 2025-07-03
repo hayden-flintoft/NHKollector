@@ -4,15 +4,37 @@
   "main": "nhk-download.js",
   "type": "commonjs",
   "scripts": {
-    "download": "./nhk-download.js"
+    "download": "./nhk-download.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:health": "node test-health.js",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:failure": "jest --testPathPattern=failure",
+    "test:performance": "jest --testPathPattern=performance",
+    "test:comprehensive": "jest --testPathPattern=comprehensive",
+    "test:all": "jest --verbose",
+    "test:coverage": "jest --coverage",
+    "service": "node service/nhk-service.js",
+    "service:dev": "NODE_ENV=development node service/nhk-service.js",
+    "service:port": "PORT=8082 node service/nhk-service.js",
+    "service:install": "bash install/install-service.sh",
+    "config:create": "node -e \"require('fs-extra').ensureDir('config').then(() => require('fs-extra').writeJSON('config/service.json', require('./config/service-config').defaults, {spaces: 2}))\""
   },
   "dependencies": {
-    "axios": "^1.9.0",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.12",
     "fs-extra": "^11.3.0",
     "puppeteer": "^24.9.0",
     "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "node-cron": "^3.0.3",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "nodemailer": "^6.9.14",
+    "webhook-discord": "^3.7.8"
+  },
+  "devDependencies": {
+    "axios": "^1.10.0",
+    "jest": "^30.0.4"
   }
 }
